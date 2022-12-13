@@ -20,7 +20,6 @@ describe('GET /api/topics', () => {
             .get("/api/topics")
             .expect(200)
             .then(({ body }) => {
-                expect(body).toBeInstanceOf(Array)
                 expect(body).toHaveLength(3)
                 body.forEach((topic) => {
                     expect(topic).toStrictEqual(
