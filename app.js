@@ -14,7 +14,7 @@ app.use((err, req, res, next) => {
             Message: "Invalid ID format."
         })
     }
-    console.log(err)
+    else console.log(err)
 })
 
 module.exports = app;
