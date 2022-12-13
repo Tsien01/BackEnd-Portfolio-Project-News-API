@@ -1,4 +1,3 @@
-// const db = require(`${__dirname}/db/connection.js`)
 const express = require("express")
 const { getTopics } = require(`${__dirname}/controllers/controllers.js`)
 
