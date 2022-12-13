@@ -1,3 +1,4 @@
+const { expect } = require("@jest/globals")
 const request = require("supertest")
 const seed = require(`${__dirname}/../db/seeds/seed.js`)
 const db = require(`${__dirname}/../db/connection.js`)
@@ -39,14 +40,17 @@ describe('GET /api/articles', () => {
             .then(({ body }) => {
                 expect(body).toHaveLength(12)
                 body.forEach((article) => {
-                    expect.objectContaining({
-                        title: expect.any(String),
-                        topic: expect.any(String),
-                        author: expect.any(String),
-                        body: expect.any(String),
-                        created_at: expect.any(Number),
-                        votes: expect.any(Number)
-                    })
+                    expect(article).toStrictEqual(
+                        expect.objectContaining({
+                            author: expect.any(String),
+                            title: expect.any(String),
+                            article_id: expect.any(Number),
+                            topic: expect.any(String),
+                            created_at: expect.any(String),
+                            votes: expect.any(Number),
+                            comment_count: expect.any(Number),
+                        })
+                    )
                 })
             })
     });
@@ -59,5 +63,10 @@ describe('GET /api/articles', () => {
                     descending: true
                 })
             })
+    });
+});
+describe('GET /api/articles/:article_id', () => {
+    it('should respond with a status 200 and an author object ', () => {
+        
     });
 });

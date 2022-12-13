@@ -8,7 +8,6 @@ exports.getTopics = (req, res, next) => {
         })
         .catch(next)
 }
-
 exports.getArticles = (req, res, next) => {
     getAllArticles()
         .then((articles) => {
