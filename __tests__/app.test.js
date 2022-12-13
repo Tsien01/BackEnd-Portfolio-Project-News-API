@@ -1,3 +1,4 @@
+const { expect } = require("@jest/globals")
 const request = require("supertest")
 const seed = require(`${__dirname}/../db/seeds/seed.js`)
 const db = require(`${__dirname}/../db/connection.js`)
@@ -13,8 +14,21 @@ beforeEach(() => {
     return seed(testData)
 })
 
-describe('Name of the group', () => {
-    it('should ', () => {
-        
+describe('GET /api/topics', () => {
+    it('should respond with a status 200 and an array of topic objects', () => {
+        return request(app)
+            .get("/api/topics")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body).toHaveLength(3)
+                body.forEach((topic) => {
+                    expect(topic).toStrictEqual(
+                        expect.objectContaining({
+                            description: expect.any(String),
+                            slug: expect.any(String)
+                        })
+                    )
+                })
+            })
     });
 });
