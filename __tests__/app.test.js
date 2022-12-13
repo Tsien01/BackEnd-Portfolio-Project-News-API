@@ -1,4 +1,3 @@
-const { expect } = require("@jest/globals")
 const request = require("supertest")
 const seed = require(`${__dirname}/../db/seeds/seed.js`)
 const db = require(`${__dirname}/../db/connection.js`)
@@ -28,6 +27,36 @@ describe('GET /api/topics', () => {
                             slug: expect.any(String)
                         })
                     )
+                })
+            })
+    });
+});
+describe('GET /api/articles', () => {
+    it('should respond with a status 200 and an array of article objects', () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body).toHaveLength(12)
+                body.forEach((article) => {
+                    expect.objectContaining({
+                        title: expect.any(String),
+                        topic: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        created_at: expect.any(Number),
+                        votes: expect.any(Number)
+                    })
+                })
+            })
+    });
+    it('should sort the response by created_at(the date) in descending order', () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body).toBeSortedBy("created_at", {
+                    descending: true
                 })
             })
     });

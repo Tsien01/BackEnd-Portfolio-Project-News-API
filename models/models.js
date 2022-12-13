@@ -5,3 +5,9 @@ exports.getAllTopics = () => {
         return result.rows;
     }))
 } 
+
+exports.getAllArticles = () => {
+    return db.query("SELECT * FROM articles ORDER BY created_at DESC").then((result) => {
+        return result.rows
+    })
+}
