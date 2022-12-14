@@ -1,3 +1,6 @@
+const { nextTick } = require("process");
+const { param } = require("../app");
+
 const db = require(`${__dirname}/../db/connection.js`)
 
 exports.getAllTopics = () => {
@@ -21,6 +24,36 @@ exports.getAllArticles = () => {
 exports.selectArticleById = ({ params }) => {
     return db.query("SELECT * FROM articles WHERE article_id=$1;", [params.article_id])
         .then((article) => {
-            return article.rows[0]
+            if (article.rows.length !== 0) {
+                return article.rows[0]
+            }
+            else return Promise.reject({
+                message: "Not Found",
+                status: 404
+            })
+        })
+}
+
+exports.selectCommentsByArticle = ({ params }) => {
+    return db.query("SELECT * FROM comments WHERE article_id=$1 ORDER BY created_at DESC", [params.article_id])
+        .then((comments) => {
+            if (comments.rows.length !== 0) {
+                return comments.rows
+            }
+            else {
+                return db.query("SELECT article_id FROM articles")
+                    .then((articleIds) => {
+                        const validCheck = articleIds.rows.some((articleId) => {
+                            return articleId.article_id == params.article_id
+                        })
+                        if (validCheck === true) {
+                            return []
+                        }
+                        else return Promise.reject({
+                            message: "Not Found",
+                            status: 404
+                        })
+                    })
+            }
         })
 }

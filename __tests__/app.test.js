@@ -90,7 +90,8 @@ describe('GET /api/articles/:article_id', () => {
             .expect(404)
             .then(({ body }) => {
                 expect(body).toStrictEqual({
-                    Message: "Article ID not found."
+                    message: "Not Found",
+                    status: 404
                 })
             })
     });
@@ -100,7 +101,69 @@ describe('GET /api/articles/:article_id', () => {
             .expect(400)
             .then(({ body }) => {
                 expect(body).toStrictEqual({
-                    Message: "Invalid ID format."
+                    message: "Bad Request",
+                    status: 400
+                })
+            })
+    });
+});
+describe('GET /api/articles/:article_id/comments', () => {
+    it('should return a status 200 and an array of comment objects', () => {
+        return request(app)
+            .get("/api/articles/9/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toHaveLength(2)
+                body.comments.forEach((comment) => {
+                    expect(comment).toStrictEqual(
+                        expect.objectContaining({
+                            comment_id: expect.any(Number),
+                            votes: expect.any(Number),
+                            created_at: expect.any(String),
+                            author: expect.any(String),
+                            body: expect.any(String),
+                        })
+                    )
+                })
+            })
+    });
+    it('should sort the response by the most recent comment first (descending order)', () => {
+        return request(app)
+            .get("/api/articles/9/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toBeSortedBy("created_at", {
+                    descending: true
+                })
+            })
+    });
+    it('should return a status 200 and an empty array if a valid, existent ID is provided but no comments are associated with that article', () => {
+        return request(app)
+            .get("/api/articles/2/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toStrictEqual([])
+            })
+    });
+    it('should return a status 404 and a "not found" message if a valid format, non-existent ID is provided', () => {
+        return request(app)
+            .get("/api/articles/5823/comments")
+            .expect(404)
+            .then(({ body }) => {
+                expect(body).toStrictEqual({
+                    message: "Not Found",
+                    status: 404
+                })
+            })
+    });
+    it('should return a status 400', () => {
+        return request(app)
+            .get("/api/articles/notAnId/comments")
+            .expect(400)
+            .then(({ body }) => {
+                expect(body).toStrictEqual({
+                    message: "Bad Request",
+                    status: 400
                 })
             })
     });

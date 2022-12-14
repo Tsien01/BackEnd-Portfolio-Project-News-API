@@ -1,5 +1,5 @@
 
-const { getAllTopics, getAllArticles, selectArticleById } = require(`${__dirname}/../models/models.js`)
+const { getAllTopics, getAllArticles, selectArticleById, selectCommentsByArticle } = require(`${__dirname}/../models/models.js`)
 
 exports.getTopics = (req, res, next) => {
     getAllTopics()
@@ -21,9 +21,19 @@ exports.getArticleById = (req, res, next) => {
             if (article !== undefined) {
                 res.status(200).send({ article })
             }
-            else res.status(404).send({
-                Message: "Article ID not found."
-            })
         })
-        .catch(next)
+        .catch((error) => {
+            next(error)
+        })
+}
+exports.getCommentsByArticle = (req, res, next) => {
+    selectCommentsByArticle(req)
+        .then((comments) => {
+            if (comments !== undefined) {
+                res.status(200).send({ comments })
+            }
+        })
+        .catch((error) => {
+            next(error)
+        })
 }
