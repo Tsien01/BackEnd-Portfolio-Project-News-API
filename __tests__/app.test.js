@@ -20,8 +20,8 @@ describe('GET /api/topics', () => {
             .get("/api/topics")
             .expect(200)
             .then(({ body }) => {
-                expect(body).toHaveLength(3)
-                body.forEach((topic) => {
+                expect(body.topics).toHaveLength(3)
+                body.topics.forEach((topic) => {
                     expect(topic).toStrictEqual(
                         expect.objectContaining({
                             description: expect.any(String),
@@ -38,8 +38,8 @@ describe('GET /api/articles', () => {
             .get("/api/articles")
             .expect(200)
             .then(({ body }) => {
-                expect(body).toHaveLength(12)
-                body.forEach((article) => {
+                expect(body.articles).toHaveLength(12)
+                body.articles.forEach((article) => {
                     expect(article).toStrictEqual(
                         expect.objectContaining({
                             author: expect.any(String),
@@ -59,7 +59,7 @@ describe('GET /api/articles', () => {
             .get("/api/articles")
             .expect(200)
             .then(({ body }) => {
-                expect(body).toBeSortedBy("created_at", {
+                expect(body.articles).toBeSortedBy("created_at", {
                     descending: true
                 })
             })

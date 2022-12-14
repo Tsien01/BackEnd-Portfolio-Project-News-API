@@ -7,30 +7,14 @@ exports.getAllTopics = () => {
 } 
 
 exports.getAllArticles = () => {
-    const articlesData = db.query("SELECT * FROM articles ORDER BY created_at DESC")
-        .then((articles) => {
-            return articles.rows
-        })
-    const commentCountReferenceObj = db.query("SELECT article_id, COUNT(*) AS comment_count FROM comments GROUP BY article_id;")
-        .then((commentCounts) => {
-            const refObj = {}
-            commentCounts.rows.forEach((commentCount) => {
-                refObj[commentCount.article_id] = commentCount.comment_count
-            })
-            return refObj
-        })
-    return Promise.all([articlesData, commentCountReferenceObj])
-        .then((results) => {
-            const articles = results[0]
-            const refObj = results[1]
-            return articles.map((article) => {
+    return db.query("SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC")
+        .then((articlesData) => {
+            const formattedArticlesData = articlesData.rows.map((article) => {
                 const formattedArticle = {...article}
-                if (refObj[article.article_id] !== undefined) {
-                    formattedArticle.comment_count = parseInt(refObj[article.article_id], 10)
-                }
-                else formattedArticle.comment_count = 0
+                formattedArticle.comment_count = parseInt(formattedArticle.comment_count, 10)
                 return formattedArticle
             })
+            return formattedArticlesData
         })
 }
 
