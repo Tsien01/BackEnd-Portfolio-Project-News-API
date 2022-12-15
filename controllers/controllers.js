@@ -1,5 +1,5 @@
 
-const { getAllTopics, getAllArticles, selectArticleById, selectCommentsByArticle, insertNewComment } = require(`${__dirname}/../models/models.js`)
+const { getAllTopics, getAllArticles, selectArticleById, selectCommentsByArticle, insertNewComment, updateArticleById } = require(`${__dirname}/../models/models.js`)
 
 exports.getTopics = (req, res, next) => {
     getAllTopics()
@@ -39,6 +39,15 @@ exports.postNewComment = (req, res, next) => {
     insertNewComment(req)
         .then((comment) => {
             res.status(201).send({ comment })
+        })
+        .catch((error) => {
+            next(error)
+        })
+}
+exports.patchArticleById = (req, res, next) => {
+    updateArticleById(req)
+        .then((article) => {
+            res.status(202).send({ article })
         })
         .catch((error) => {
             next(error)

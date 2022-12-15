@@ -49,8 +49,8 @@ exports.selectCommentsByArticle = ({ params }) => {
 exports.insertNewComment = ({ params, body }) => {
     if (typeof body.username !== "string" || typeof body.body !== "string") {
             return Promise.reject({
-            message: "Bad Request",
-            status: 400
+                message: "Bad Request",
+                status: 400
             })
         }
     else {
@@ -69,5 +69,30 @@ exports.insertNewComment = ({ params, body }) => {
                 })
             }
         })
+    }
+}
+exports.updateArticleById = ({ params, body }) => {
+    if (typeof body.inc_vote !== "number") {
+        return Promise.reject({
+            message: "Bad Request",
+            status: 400
+        })
+    }
+    else {
+        return db.query("SELECT article_id FROM articles WHERE article_id = $1", [params.article_id])
+            .then((articleIdCheck) => {
+                if (articleIdCheck.rows.length === 0) {
+                    return Promise.reject({
+                        message: "Not Found",
+                        status: 404
+                    })
+                }
+                else {
+                    return db.query("UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *", [body.inc_vote, params.article_id])
+                        .then((updatedArticle) => {
+                            return updatedArticle.rows[0]
+                        })
+                }
+            })
     }
 }

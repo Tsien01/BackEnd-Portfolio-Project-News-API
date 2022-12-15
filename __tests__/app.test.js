@@ -143,6 +143,54 @@ describe('Happy paths', () => {
                 })
         });
     });
+    describe('PATCH /api/articles/:article_id', () => {
+        it('should return a status 202 and an article object with pathced voteCount when provided a valid inc_vote value in an object', () => {
+            const patchData = {
+                inc_vote: 1
+            }
+            return request(app)
+                .patch("/api/articles/2")
+                .send(patchData)
+                .expect(202)
+                .then(({ body }) => {
+                    expect(body.article).toStrictEqual(
+                        expect.objectContaining({
+                            article_id: 2,
+                            title: "Sony Vaio; or, The Laptop",
+                            topic: "mitch",
+                            author: "icellusedkars",
+                            body: "Call me Mitchell. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would buy a laptop about a little and see the codey part of the world. It is a way I have of driving off the spleen and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people’s hats off—then, I account it high time to get to coding as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the laptop. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the the Vaio with me.",
+                            created_at: expect.any(String),
+                            votes: 1,
+                        })
+                    )
+                })
+        });
+        it('should ignore any additional keys in the request', () => {
+            const patchData = {
+                inc_vote: 1, 
+                author: "evilUser",
+                title: "I own this article now."
+            }
+            return request(app)
+                .patch("/api/articles/2")
+                .send(patchData)
+                .expect(202)
+                .then(({ body }) => {
+                    expect(body.article).toStrictEqual(
+                        expect.objectContaining({
+                            article_id: 2,
+                            title: "Sony Vaio; or, The Laptop",
+                            topic: "mitch",
+                            author: "icellusedkars",
+                            body: "Call me Mitchell. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would buy a laptop about a little and see the codey part of the world. It is a way I have of driving off the spleen and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people’s hats off—then, I account it high time to get to coding as soon as I can. This is my substitute for pistol and ball. With a philosophical flourish Cato throws himself upon his sword; I quietly take to the laptop. There is nothing surprising in this. If they but knew it, almost all men in their degree, some time or other, cherish very nearly the same feelings towards the the Vaio with me.",
+                            created_at: expect.any(String),
+                            votes: 1,
+                        })
+                    )
+                })
+        });
+    });
 });
 describe('Error-handling Sad paths', () => {
     describe('Invalid format ID parameters', () => {
@@ -168,7 +216,7 @@ describe('Error-handling Sad paths', () => {
                 })
             })
         });
-        it('POST /api/articles/:article_id/comments should return a status 400 and a Bad Request error message if passed an invalid format ID', () => {
+        it('POST /api/articles/:article_id/comments should return a status 400 and a Bad Request error message if passed an invalid format article ID', () => {
             const newComment = {
                 username: "rogersop",
                 body: "I am posting this comment to this api to see if it works."
@@ -183,6 +231,21 @@ describe('Error-handling Sad paths', () => {
                     status: 400
                 })
             })
+        });
+        it('PATCH /api/articles/:article_id should return a status 400 and a Bad Request message if passed an invalid format article ID', () => {
+            const patchData = {
+                inc_vote: 1
+            }
+            return request(app)
+                .patch("/api/articles/notAnId")
+                .send(patchData)
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body).toStrictEqual({
+                        message: "Bad Request",
+                        status: 400
+                    })
+                })
         });
     });
     describe('Valid, non-existent ID parameters', () => {
@@ -216,6 +279,21 @@ describe('Error-handling Sad paths', () => {
             return request(app)
                 .post("/api/articles/5823/comments")
                 .send(newComment)
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body).toStrictEqual({
+                        message: "Not Found",
+                        status: 404
+                    })
+                })
+        });
+        it('PATCH /api/articles/:article_id should return a status 404 and a "not found message if passed a valid format, non-existent article ID', () => {
+            const patchData = {
+                inc_vote: 1
+            }
+            return request(app)
+                .patch("/api/articles/5823")
+                .send(patchData)
                 .expect(404)
                 .then(({ body }) => {
                     expect(body).toStrictEqual({
@@ -282,6 +360,38 @@ describe('Error-handling Sad paths', () => {
                 return request(app)
                     .post("/api/articles/1/comments")
                     .send(newComment)
+                    .expect(400)
+                    .then(({ body }) => {
+                        expect(body).toStrictEqual({
+                            message: "Bad Request",
+                            status: 400
+                        })
+                    })
+            });
+        });
+        describe('PATCH /api/articles/:article_id should return a status 400 and a Bad Request message if passed an invalid/incorrectly formatted object', () => {
+            it('case 1: invalid data type of inc_votes value', () => {
+                const patchData = {
+                    inc_votes: "Twelve"
+                }
+                return request(app)
+                    .patch("/api/articles/2")
+                    .send(patchData)
+                    .expect(400)
+                    .then(({ body }) => {
+                        expect(body).toStrictEqual({
+                            message: "Bad Request",
+                            status: 400
+                        })
+                    })
+            });
+            it('case 2: data sent on incorrect key', () => {
+                const patchData = {
+                    incVotes: 12
+                }
+                return request(app)
+                    .patch("/api/articles/2")
+                    .send(patchData)
                     .expect(400)
                     .then(({ body }) => {
                         expect(body).toStrictEqual({
