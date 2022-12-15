@@ -1,11 +1,11 @@
 const db = require(`${__dirname}/../db/connection.js`)
+const format = require(`pg-format`)
 
 exports.getAllTopics = () => {
     return db.query("SELECT * FROM topics;").then(((result) => {
         return result.rows;
     }))
 } 
-
 exports.getAllArticles = () => {
     return db.query("SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC")
         .then((articlesData) => {
@@ -17,7 +17,6 @@ exports.getAllArticles = () => {
             return formattedArticlesData
         })
 }
-
 exports.selectArticleById = ({ params }) => {
     return db.query("SELECT * FROM articles WHERE article_id=$1;", [params.article_id])
         .then((article) => {
@@ -30,7 +29,6 @@ exports.selectArticleById = ({ params }) => {
             })
         })
 }
-
 exports.selectCommentsByArticle = ({ params }) => {
     return db.query("SELECT article_id FROM articles WHERE article_id = $1", [params.article_id])
     .then((checkArticleId) => {
@@ -47,4 +45,28 @@ exports.selectCommentsByArticle = ({ params }) => {
                 })
             }
         })
+}
+exports.insertNewComment = ({ params, body }) => {
+    if (typeof body.username === "string" && typeof body.body === "string") {
+        return db.query("SELECT article_id FROM articles WHERE article_id = $1", [params.article_id])
+            .then((articleIdCheck) => {
+                if (articleIdCheck.rows.length === 0) {
+                    return Promise.reject({
+                        message: "Not Found",
+                        status: 404
+                    })
+                }
+                else {return db.query("INSERT INTO comments(body, article_id, author) VALUES ($1, $2, $3) RETURNING *;", [body.body, params.article_id, body.username])
+                    .then((newComment) => {
+                        return newComment.rows[0]
+                    })}
+            })
+    }
+    else {
+        return Promise.reject(
+            {
+        message: "Bad Request",
+        status: 400
+        }
+    )}
 }
