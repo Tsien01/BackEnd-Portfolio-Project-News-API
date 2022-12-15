@@ -216,6 +216,25 @@ describe('Happy paths', () => {
                 })
         });
     });
+    describe('GET /api/users', () => {
+        it('should respond with a status 200 and an array of user objects', () => {
+            return request(app)
+                .get("/api/users")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.users).toHaveLength(4)
+                    body.users.forEach((user) => {
+                        expect(user).toStrictEqual(
+                            expect.objectContaining({
+                                username: expect.any(String),
+                                name: expect.any(String),
+                                avatar_url: expect.any(String)
+                            })
+                        )
+                    })
+                })
+        });
+    });
 });
 describe('Error-handling Sad paths', () => {
     describe('Invalid format ID parameters', () => {
