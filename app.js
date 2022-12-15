@@ -17,11 +17,11 @@ app.use((err, req, res, next) => {
             status: 400
         })
     }
-    if (err.status === 404) {
+    else if (err.status === 404) {
         res.status(err.status).send(err)
     }
     else console.log(err)
-    next()
+    next();
 })
 
 module.exports = app;

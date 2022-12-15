@@ -41,12 +41,9 @@ exports.selectCommentsByArticle = ({ params }) => {
                 return comments.rows
             }
             else {
-                return db.query("SELECT article_id FROM articles")
-                    .then((articleIds) => {
-                        const validCheck = articleIds.rows.some((articleId) => {
-                            return articleId.article_id == params.article_id
-                        })
-                        if (validCheck === true) {
+                return db.query("SELECT article_id FROM articles WHERE article_id = $1", [params.article_id])
+                    .then((checkArticleId) => {
+                        if (checkArticleId.rows.length !== 0) {
                             return []
                         }
                         else return Promise.reject({
