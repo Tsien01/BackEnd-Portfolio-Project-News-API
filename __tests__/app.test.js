@@ -142,6 +142,31 @@ describe('Happy paths', () => {
                     )
                 })
         });
+        it('should ignore any additional keys included in the request body', () => {
+            const newComment = {
+                username: "rogersop",
+                body: "I am posting this comment to this api to see if it works.",
+                votes: 10000000,
+                created_at: "The beginning of time"
+            }
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send(newComment)
+            .expect(201)
+            .then(({ body }) => {
+                expect(body.comment).toStrictEqual(
+                    expect.objectContaining({
+                        comment_id: expect.any(Number),
+                        body: "I am posting this comment to this api to see if it works.",
+                        votes: 0, 
+                        author: "rogersop",
+                        article_id: 1,
+                        created_at: expect.any(String)
+                    })
+                )
+                expect(body.comment.created_at).not.toBe("The beginning of time")
+            })
+        });
     });
     describe('PATCH /api/articles/:article_id', () => {
         it('should return a status 202 and an article object with pathced voteCount when provided a valid inc_vote value in an object', () => {
@@ -360,11 +385,11 @@ describe('Error-handling Sad paths', () => {
                 return request(app)
                     .post("/api/articles/1/comments")
                     .send(newComment)
-                    .expect(400)
+                    .expect(404)
                     .then(({ body }) => {
                         expect(body).toStrictEqual({
-                            message: "Bad Request",
-                            status: 400
+                            message: "Not Found",
+                            status: 404
                         })
                     })
             });

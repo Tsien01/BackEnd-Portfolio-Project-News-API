@@ -30,9 +30,9 @@ app.use((err, req, res, next) => {
         })
     }
     else if (err.code === "23503") {
-        res.status(400).send({
-            message: "Bad Request",
-            status: 400
+        res.status(404).send({
+            message: "Not Found",
+            status: 404
         })
     }
     else if (err.status !== undefined) {
