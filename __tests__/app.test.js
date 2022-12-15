@@ -66,32 +66,37 @@ describe('GET /api/articles', () => {
     });
 });
 describe('GET /api/articles/:article_id', () => {
-    it('should respond with a status 200 and an author object ', () => {
+    it('should respond with a status 200 and an article object ', () => {
         return request(app)
             .get("/api/articles/3")
             .expect(200)
             .then(({ body }) => {
                 expect(body.article).toStrictEqual(
-                    {
-                        article_id: 3,
-                        title: "Eight pug gifs that remind me of mitch",
-                        topic: "mitch",
-                        author: "icellusedkars",
-                        body: "some gifs",
-                        created_at: "2020-11-03T09:12:00.000Z",
-                        votes: 0,
-                      }
+                    expect.objectContaining(
+                        {
+                            article_id: 3,
+                            title: "Eight pug gifs that remind me of mitch",
+                            topic: "mitch",
+                            author: "icellusedkars",
+                            body: "some gifs",
+                            created_at: "2020-11-03T09:12:00.000Z",
+                            votes: 0,
+                          }
+                    )
                 )
             })
     });
 });
 describe('GET /api/articles/:article_id/comments', () => {
-    it('should return a status 200 and an array of comment objects', () => {
+    it('should return a status 200 and an array of comment objects sorted by most recent comment first(descending order)', () => {
         return request(app)
             .get("/api/articles/9/comments")
             .expect(200)
             .then(({ body }) => {
                 expect(body.comments).toHaveLength(2)
+                expect(body.comments).toBeSortedBy("created_at", {
+                    descending: true
+                })
                 body.comments.forEach((comment) => {
                     expect(comment).toStrictEqual(
                         expect.objectContaining({
@@ -101,32 +106,22 @@ describe('GET /api/articles/:article_id/comments', () => {
                             author: expect.any(String),
                             body: expect.any(String),
                         })
-                        )
-                    })
-            })
-    });
-    it('should sort the response by the most recent comment first (descending order)', () => {
-        return request(app)
-            .get("/api/articles/9/comments")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.comments).toBeSortedBy("created_at", {
-                    descending: true
+                    )
                 })
             })
-        });
-        it('should return a status 200 and an empty array if a valid, existent ID is provided but no comments are associated with that article', () => {
-        return request(app)
-            .get("/api/articles/2/comments")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.comments).toStrictEqual([])
-            })
+    });
+    it('should return a status 200 and an empty array if a valid, existent ID is provided but no comments are associated with that article', () => {
+    return request(app)
+        .get("/api/articles/2/comments")
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toStrictEqual([])
+        })
     });
 });
 describe('Error-handling Sad paths', () => {
     describe('Invalid format ID parameters', () => {
-        it('should return a status 400 and an error message if passed an invalid format ID', () => {
+        it('GET /api/articles/:article_id should return a status 400 and an error message if passed an invalid format ID', () => {
             return request(app)
             .get("/api/articles/notAnId")
             .expect(400)
@@ -137,9 +132,31 @@ describe('Error-handling Sad paths', () => {
                 })
             })
         });
+        it('GET /api/articles/:article_id/comments should return a status 400 and an error message if passed an invalid format ID ', () => {
+            return request(app)
+            .get("/api/articles/notAnId/comments")
+            .expect(400)
+            .then(({ body }) => {
+                expect(body).toStrictEqual({
+                    message: "Bad Request",
+                    status: 400
+                })
+            })
+        });
     });
     describe('Valid, non-existent ID parameters', () => {
-        it('should return a status 404 and a "not found" message if a valid format, non-existent ID is provided', () => {
+        it('GET /api/articles/:article_id should return a status 404 and a "not found" message if a valid format, non-existent ID is provided', () => {
+            return request(app)
+                .get("/api/articles/4321")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body).toStrictEqual({
+                        message: "Not Found",
+                        status: 404
+                    })
+                })
+        });
+        it('GET /api/articles/:article_id/comments should return a status 404 and a "not found" message if a valid format, non-existent ID is provided', () => {
             return request(app)
                 .get("/api/articles/5823/comments")
                 .expect(404)

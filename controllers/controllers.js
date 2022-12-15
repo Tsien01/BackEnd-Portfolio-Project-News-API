@@ -29,9 +29,7 @@ exports.getArticleById = (req, res, next) => {
 exports.getCommentsByArticle = (req, res, next) => {
     selectCommentsByArticle(req)
         .then((comments) => {
-            if (comments !== undefined) {
                 res.status(200).send({ comments })
-            }
         })
         .catch((error) => {
             next(error)
