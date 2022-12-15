@@ -274,6 +274,22 @@ describe('Error-handling Sad paths', () => {
                         })
                     })
             });
+            it('case 4: unregistered username sent in request', () => {
+                const newComment = {
+                    username: "UnregisterUser01",
+                    body: "*Evil cackle*"
+                }
+                return request(app)
+                    .post("/api/articles/1/comments")
+                    .send(newComment)
+                    .expect(400)
+                    .then(({ body }) => {
+                        expect(body).toStrictEqual({
+                            message: "Bad Request",
+                            status: 400
+                        })
+                    })
+            });
         });
     });
 });
