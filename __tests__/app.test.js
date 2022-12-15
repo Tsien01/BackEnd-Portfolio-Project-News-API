@@ -169,14 +169,14 @@ describe('Happy paths', () => {
         });
     });
     describe('PATCH /api/articles/:article_id', () => {
-        it('should return a status 202 and an article object with pathced voteCount when provided a valid inc_vote value in an object', () => {
+        it('should return a status 200 and an article object with pathced voteCount when provided a valid inc_vote value in an object', () => {
             const patchData = {
                 inc_vote: 1
             }
             return request(app)
                 .patch("/api/articles/2")
                 .send(patchData)
-                .expect(202)
+                .expect(200)
                 .then(({ body }) => {
                     expect(body.article).toStrictEqual(
                         expect.objectContaining({
@@ -200,7 +200,7 @@ describe('Happy paths', () => {
             return request(app)
                 .patch("/api/articles/2")
                 .send(patchData)
-                .expect(202)
+                .expect(200)
                 .then(({ body }) => {
                     expect(body.article).toStrictEqual(
                         expect.objectContaining({

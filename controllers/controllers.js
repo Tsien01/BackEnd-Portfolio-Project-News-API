@@ -47,7 +47,7 @@ exports.postNewComment = (req, res, next) => {
 exports.patchArticleById = (req, res, next) => {
     updateArticleById(req)
         .then((article) => {
-            res.status(202).send({ article })
+            res.status(200).send({ article })
         })
         .catch((error) => {
             next(error)
