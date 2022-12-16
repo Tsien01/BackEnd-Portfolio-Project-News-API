@@ -7,7 +7,6 @@ exports.getAllTopics = () => {
     }))
 } 
 exports.getAllArticles = ({ query }) => {
-    // GROUP BY articles.article_id ORDER BY created_at DESC
     const queryValues = []
     let _articlesQueryString = "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id"
     if (query.topic !== undefined) {
