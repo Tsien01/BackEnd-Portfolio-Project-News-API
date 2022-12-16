@@ -72,7 +72,7 @@ describe('Happy paths', () => {
                     expect(body.articles).toHaveLength(1)
                     expect(body.articles[0]).toStrictEqual(
                         expect.objectContaining({
-                            article_id: expect.any(Number),
+                            article_id: 5,
                             title: "UNCOVERED: catspiracy to bring down democracy",
                             topic: "cats",
                             author: "rogersop",
