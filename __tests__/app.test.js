@@ -54,13 +54,78 @@ describe('Happy paths', () => {
                     })
                 })
         });
-        it('should sort the response by created_at(the date) in descending order', () => {
+        it('should sort the response by created_at(the date) in descending order by default', () => {
             return request(app)
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
                     expect(body.articles).toBeSortedBy("created_at", {
                         descending: true
+                    })
+                })
+        });
+        it('should respond to a topic query in the request, returning only articles matching that topic', () => {
+            return request(app)
+                .get("/api/articles?topic=cats")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toHaveLength(1)
+                    expect(body.articles[0]).toStrictEqual(
+                        expect.objectContaining({
+                            article_id: expect.any(Number),
+                            title: "UNCOVERED: catspiracy to bring down democracy",
+                            topic: "cats",
+                            author: "rogersop",
+                            body: "Bastet walks amongst us, and the cats are taking arms!",
+                            created_at: expect.any(String),
+                            votes: 0,
+                        })
+                    )
+                })
+        });
+        it('should respond to a sort_by query, returning the requested articles sorted by the column specified', () => {
+            return request(app)
+                .get("/api/articles?sort_by=author")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("author", {
+                        descending: true
+                    })
+                    body.articles.forEach((article) => {
+                        expect(article).toStrictEqual(
+                            expect.objectContaining({
+                                author: expect.any(String),
+                                title: expect.any(String),
+                                article_id: expect.any(Number),
+                                topic: expect.any(String),
+                                created_at: expect.any(String),
+                                votes: expect.any(Number),
+                                comment_count: expect.any(Number),
+                            })
+                        )
+                    })
+                })
+        });
+        it('should respond to a order query, ordering the requested articles in ascending or descending order', () => {
+            return request(app)
+                .get("/api/articles?order=asc")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("created_at", {
+                        ascending: true
+                    })
+                    body.articles.forEach((article) => {
+                        expect(article).toStrictEqual(
+                            expect.objectContaining({
+                                author: expect.any(String),
+                                title: expect.any(String),
+                                article_id: expect.any(Number),
+                                topic: expect.any(String),
+                                created_at: expect.any(String),
+                                votes: expect.any(Number),
+                                comment_count: expect.any(Number),
+                            })
+                        )
                     })
                 })
         });
@@ -443,6 +508,49 @@ describe('Error-handling Sad paths', () => {
                             status: 400
                         })
                     })
+            });
+        });
+    });
+    describe('Invalid query values', () => {
+        describe('GET /api/articles', () => {
+            describe('topic', () => {
+                it('should return a 404 not found if queried with a non-existent topic value', () => {
+                    return request(app)
+                        .get("/api/articles?topic=notATopic")
+                        .expect(404)
+                        .then(({ body }) => {
+                            expect(body).toStrictEqual({
+                                message: "Not Found",
+                                status: 404
+                            })
+                        })
+                });
+            });
+            describe('sort_by', () => {
+                it('should return a 400 bad request if queried with a non-existent column to sort by', () => {
+                    return request(app)
+                    .get("/api/articles?sort_by=notAColumn")
+                    .expect(400)
+                    .then(({ body }) => {
+                        expect(body).toStrictEqual({
+                            message: "Bad Request",
+                            status: 400
+                        })
+                    })
+                });
+            });
+            describe('order', () => {
+                it('should return a 400 bad request if queried with anything other than asc/desc to order by', () => {
+                    return request(app)
+                        .get("/api/articles?order=diagonal?")
+                        .expect(400)
+                        .then(({ body }) => {
+                            expect(body).toStrictEqual({
+                                message: "Bad Request",
+                                status: 400
+                            })
+                        })
+                });
             });
         });
     });

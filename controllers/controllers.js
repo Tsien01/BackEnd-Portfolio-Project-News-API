@@ -9,7 +9,7 @@ exports.getTopics = (req, res, next) => {
         .catch(next)
 }
 exports.getArticles = (req, res, next) => {
-    getAllArticles()
+    getAllArticles(req)
         .then((articles) => {
             res.status(200).send({ articles })
         })

@@ -6,15 +6,50 @@ exports.getAllTopics = () => {
         return result.rows;
     }))
 } 
-exports.getAllArticles = () => {
-    return db.query("SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC")
+exports.getAllArticles = ({ query }) => {
+    // GROUP BY articles.article_id ORDER BY created_at DESC
+    const queryValues = []
+    let _articlesQueryString = "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id"
+    if (query.topic !== undefined) {
+        queryValues.push(query.topic)
+        _articlesQueryString += " WHERE topic = %L"
+    }
+    if (query.sort_by !== undefined) {
+        queryValues.push(query.sort_by)
+        _articlesQueryString += " GROUP BY articles.article_id ORDER BY %s"
+    }
+    else {
+        _articlesQueryString += " GROUP BY articles.article_id ORDER BY created_at"
+    }
+    if (query.order === "asc") {
+        _articlesQueryString += " ASC"
+    }
+    else if (query.order === undefined || query.order === "desc"){
+        _articlesQueryString += " DESC"
+    }
+    else {
+        return Promise.reject({
+            message: "Bad Request",
+            status: 400
+        })
+    }
+    const formattedArticlesQueryString = format(_articlesQueryString, queryValues)
+    return db.query(formattedArticlesQueryString)
         .then((articlesData) => {
-            const formattedArticlesData = articlesData.rows.map((article) => {
-                const formattedArticle = {...article}
-                formattedArticle.comment_count = parseInt(formattedArticle.comment_count, 10)
-                return formattedArticle
-            })
-            return formattedArticlesData
+            if (articlesData.rows.length === 0) {
+                return Promise.reject({
+                    message: "Not Found",
+                    status: 404
+                })
+            }
+            else {
+                const formattedArticlesData = articlesData.rows.map((article) => {
+                    const formattedArticle = {...article}
+                    formattedArticle.comment_count = parseInt(formattedArticle.comment_count, 10)
+                    return formattedArticle
+                })
+                return formattedArticlesData
+            }
         })
 }
 exports.selectArticleById = ({ params }) => {
