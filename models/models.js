@@ -138,3 +138,15 @@ exports.getAllUsers = () => {
             return users.rows;
         })
 }
+exports.deleteSelectedComment = ({ params }) => {
+    return db.query("DELETE FROM comments WHERE comment_id=$1 RETURNING *", [params.comment_id])
+        .then((deletedData) => {
+            if (deletedData.rows.length === 0) {
+                return Promise.reject({
+                    message: "Not Found", 
+                    status: 404, 
+                })
+            }
+            else return "Successfully Deleted";
+        })
+}

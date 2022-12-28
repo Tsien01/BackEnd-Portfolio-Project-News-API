@@ -1,5 +1,5 @@
 
-const { getAllTopics, getAllArticles, selectArticleById, selectCommentsByArticle, insertNewComment, updateArticleById, getAllUsers } = require(`${__dirname}/../models/models.js`)
+const { getAllTopics, getAllArticles, selectArticleById, selectCommentsByArticle, insertNewComment, updateArticleById, getAllUsers, deleteSelectedComment } = require(`${__dirname}/../models/models.js`)
 
 exports.getTopics = (req, res, next) => {
     getAllTopics()
@@ -57,6 +57,15 @@ exports.getUsers = (req, res, next) => {
     getAllUsers(req)
         .then((users) => {
             res.status(200).send({ users })
+        })
+        .catch((error) => {
+            next(error)
+        })
+}
+exports.deleteCommentById = (req, res, next) => {
+    deleteSelectedComment(req)
+        .then((message) => {
+            res.status(200).send({ message })
         })
         .catch((error) => {
             next(error)

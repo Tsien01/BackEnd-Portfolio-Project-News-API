@@ -301,6 +301,16 @@ describe('Happy paths', () => {
                 })
         });
     });
+    describe('DELETE /api/comments/:comment_id', () => {
+        it('should delete the comment identified by the comment id and return a status 200, a "successfully deleted" message wihout the deleted content', () => {
+            return request(app)
+                .delete("/api/comments/1")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.message).toBe("Successfully Deleted")
+                })
+        });
+    });
 });
 describe('Error-handling Sad paths', () => {
     describe('Invalid format ID parameters', () => {
@@ -357,6 +367,17 @@ describe('Error-handling Sad paths', () => {
                     })
                 })
         });
+        it('DELETE /api/comments/:comment_id should return a status 400 and a Bad Request message if passed an invalid format comment ID', () => {
+            return request(app)
+                .delete("/api/comments/notAnId")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body).toStrictEqual({
+                        message: "Bad Request", 
+                        status: 400, 
+                    })
+                })
+        });
     });
     describe('Valid, non-existent ID parameters', () => {
         it('GET /api/articles/:article_id should return a status 404 and a "not found" message if a valid format, non-existent ID is provided', () => {
@@ -409,6 +430,17 @@ describe('Error-handling Sad paths', () => {
                     expect(body).toStrictEqual({
                         message: "Not Found",
                         status: 404
+                    })
+                })
+        });
+        it('DELETE /api/comments/:comment_id should return a status 404 and a "not found" message if passed a valid format, non-existent comment ID', () => {
+            return request(app)
+                .delete("/api/comments/999")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body).toStrictEqual({
+                        message: "Not Found", 
+                        status: 404, 
                     })
                 })
         });
