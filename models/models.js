@@ -8,14 +8,15 @@ exports.getAllTopics = () => {
 } 
 exports.getAllArticles = ({ query }) => {
     const queryValues = []
+    const topicValue = []
     let _articlesQueryString = "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id"
     if (query.topic !== undefined) {
-        queryValues.push(query.topic)
-        _articlesQueryString += " WHERE topic = %L"
+        topicValue.push(query.topic)
+        _articlesQueryString += " WHERE topic = $1"
     }
     if (query.sort_by !== undefined) {
         queryValues.push(query.sort_by)
-        _articlesQueryString += " GROUP BY articles.article_id ORDER BY %s"
+        _articlesQueryString += " GROUP BY articles.article_id ORDER BY %I"
     }
     else {
         _articlesQueryString += " GROUP BY articles.article_id ORDER BY created_at"
@@ -33,7 +34,7 @@ exports.getAllArticles = ({ query }) => {
         })
     }
     const formattedArticlesQueryString = format(_articlesQueryString, queryValues)
-    return db.query(formattedArticlesQueryString)
+    return db.query(formattedArticlesQueryString, topicValue)
         .then((articlesData) => {
             if (articlesData.rows.length === 0) {
                 return Promise.reject({

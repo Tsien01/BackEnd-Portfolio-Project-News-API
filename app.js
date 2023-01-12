@@ -16,7 +16,7 @@ app.get("/api/articles/:article_id/comments", getCommentsByArticle)
 
 app.post("/api/articles/:article_id/comments", postNewComment)
 
-app.patch("/api/articles/:article_id", patchArticleById)
+app.patch("/api/articles/:article_id", patchArticleById) //patch inc_vote property of article
 
 app.get("/api/users", getUsers)
 
